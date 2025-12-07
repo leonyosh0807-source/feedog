@@ -19,8 +19,17 @@ public interface JpaFeedogLogRepository
 
     /**
      * 給餌ログを「新しい fedAt の順」に最大 50 件まで取得する。
-     * 
+     *
      * メソッド名からクエリを自動生成する Spring Data JPA の機能を利用。
      */
     List<FeedogLog> findTop50ByOrderByFedAtDesc();
+
+    /**
+     * ドメイン側の「最近のログ」取得メソッドを
+     * JPA の命名規則メソッドに橋渡しする。
+     */
+    @Override
+    default List<FeedogLog> findRecentLogs() {
+        return findTop50ByOrderByFedAtDesc();
+    }
 }
