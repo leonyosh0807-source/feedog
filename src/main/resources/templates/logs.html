@@ -1,82 +1,212 @@
 <!doctype html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Feedog Logs</title>
   <style>
-    :root { color-scheme: light; }
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin: 0; background: #f6f7fb; color: #111; }
-    header { padding: 16px 18px; background: #fff; border-bottom: 1px solid #e7e7ee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    header h1 { margin: 0; font-size: 18px; }
-    header a { color: #2f6fed; text-decoration: none; font-size: 14px; }
-    header a:hover { text-decoration: underline; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin:0; background:#f6f7fb; color:#111; }
+    header { padding:16px 18px; background:#fff; border-bottom:1px solid #e7e7ee; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    header h1 { margin:0; font-size:18px; }
+    header a { color:#2f6fed; text-decoration:none; font-size:14px; }
+    header a:hover { text-decoration:underline; }
     main { max-width: 900px; margin: 0 auto; padding: 18px; }
-    .card { background: #fff; border: 1px solid #e7e7ee; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 0 rgba(0,0,0,.03); }
-    .empty { padding: 20px; text-align: center; color: #555; }
-    .list { display: grid; gap: 12px; }
-    .item { border: 1px solid #e7e7ee; border-radius: 12px; padding: 12px 14px; background: #fff; }
-    .top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-    .dt { font-weight: 700; }
-    .tag { font-size: 12px; padding: 3px 8px; border-radius: 999px; background: #eef3ff; color: #2f6fed; }
-    .tag.snack { background: #eafaf3; color: #18a06b; }
-    .meta { margin-top: 8px; font-size: 13px; color: #333; display: grid; gap: 4px; }
-    .meta b { color: #111; }
-    .memo { margin-top: 8px; padding: 10px 12px; background: #fafbff; border: 1px solid #e9ecff; border-radius: 10px; font-size: 13px; color: #222; white-space: pre-wrap; }
-    .foot { margin-top: 10px; font-size: 12px; color: #666; display: flex; gap: 12px; flex-wrap: wrap; }
+    .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom: 12px; }
+    .bar button { border:none; background:#2f6fed; color:#fff; border-radius:10px; padding: 10px 12px; cursor:pointer; }
+    .bar button:disabled { opacity:.6; cursor:default; }
+    .small { font-size:12px; color:#666; }
+    .list { display:grid; gap: 12px; }
+    .item { background:#fff; border:1px solid #e7e7ee; border-radius:12px; padding: 12px 14px; box-shadow: 0 1px 0 rgba(0,0,0,.03); }
+    .top { display:flex; gap: 10px; align-items:baseline; flex-wrap:wrap; justify-content:space-between; }
+    .left { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+    .dt { font-weight:700; }
+    .tag { font-size:12px; padding: 3px 8px; border-radius:999px; background:#eef3ff; color:#2f6fed; }
+    .tag.snack { background:#eafaf3; color:#18a06b; }
+    .meta { margin-top: 8px; font-size:13px; color:#333; display:grid; gap:4px; }
+    .memo { margin-top: 8px; padding: 10px 12px; background:#fafbff; border:1px solid #e9ecff; border-radius:10px; font-size:13px; color:#222; white-space:pre-wrap; }
+    .foot { margin-top: 10px; font-size:12px; color:#666; display:flex; gap:12px; flex-wrap:wrap; }
+    .danger { background:#fff; border:1px solid #ffd2d2; color:#b40000; border-radius:10px; padding: 8px 10px; cursor:pointer; }
+    .cardEmpty { background:#fff; border:1px solid #e7e7ee; border-radius:12px; padding: 18px; text-align:center; color:#555; }
+    .msg { margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; display:none; }
+    .msg.ok { background:#ecfff6; border-color:#bfead5; color:#0b6b41; }
+    .msg.ng { background:#fff0f0; border-color:#ffd2d2; color:#b40000; }
   </style>
 </head>
 
 <body>
 <header>
   <h1>Feedog Logs</h1>
-  <a th:href="@{/feed}">＋ 食事入力へ</a>
+  <a href="/feed">＋ 食事入力へ</a>
 </header>
 
 <main>
-  <section class="list" th:if="${logs != null and !logs.isEmpty()}">
-    <article class="item" th:each="log : ${logs}">
-      <div class="top">
-        <div class="dt"
-             th:text="${#temporals.format(log.fedAt, 'yyyy/MM/dd HH:mm')}">2025/01/15 07:32</div>
+  <div class="bar">
+    <button id="btnReload" type="button">更新</button>
+    <span class="small">API：GET /api/logs/recent</span>
+  </div>
 
-        <!-- kind 表示：MEAL / SNACK 想定。SNACK の時だけ色を変える -->
-        <span class="tag"
-              th:classappend="${log.kind != null and log.kind.toString() == 'SNACK'} ? ' snack' : ''"
-              th:text="${log.kind}">MEAL</span>
-      </div>
+  <div id="msgOk" class="msg ok"></div>
+  <div id="msgNg" class="msg ng"></div>
 
-      <div class="meta">
-        <!-- familyId/petId をそのまま出す想定（将来は名前に置き換え可能） -->
-        <div>誰が：<b th:text="${log.familyId}">1</b></div>
-        <div>どのペット：<b th:text="${log.petId}">1</b></div>
-        <div>量：<b th:text="${log.portion}">NORMAL</b></div>
-      </div>
+  <section id="list" class="list" style="display:none;"></section>
 
-      <!-- メモ：null/空なら出さない -->
-      <div class="memo" th:if="${log.memo != null and !#strings.isEmpty(log.memo)}"
-           th:text="${log.memo}">メモ</div>
-
-      <div class="foot">
-        <div th:if="${log.createdAt != null}">
-          createdAt：<span th:text="${#temporals.format(log.createdAt, 'yyyy/MM/dd HH:mm')}">2025/01/15 07:32</span>
-        </div>
-
-        <!-- ✅ あなたの仕様：updatedAt が null の場合は表示しない -->
-        <div th:if="${log.updatedAt != null}">
-          updatedAt：<span th:text="${#temporals.format(log.updatedAt, 'yyyy/MM/dd HH:mm')}">2025/01/15 07:40</span>
-        </div>
-      </div>
-    </article>
-  </section>
-
-  <!-- 空表示 -->
-  <section class="card empty" th:if="${logs == null or logs.isEmpty()}">
+  <section id="empty" class="cardEmpty" style="display:none;">
     <div>ログはまだありません。</div>
-    <div style="margin-top: 10px;">
-      <a th:href="@{/feed}">食事入力へ</a>
-    </div>
+    <div style="margin-top: 10px;"><a href="/feed">食事入力へ</a></div>
   </section>
 </main>
+
+<script>
+  function showOk(text) {
+    const ok = document.getElementById("msgOk");
+    const ng = document.getElementById("msgNg");
+    ng.style.display = "none";
+    ok.textContent = text;
+    ok.style.display = "block";
+  }
+
+  function showNg(text) {
+    const ok = document.getElementById("msgOk");
+    const ng = document.getElementById("msgNg");
+    ok.style.display = "none";
+    ng.textContent = text;
+    ng.style.display = "block";
+  }
+
+  function fmt(dt) {
+    // LocalDateTimeのJSONは "2025-01-15T07:32:00" のような形式想定
+    if (!dt) return "";
+    const d = new Date(dt);
+    if (isNaN(d.getTime())) {
+      // パースできない場合はそのまま返す（環境差対策）
+      return String(dt);
+    }
+    const pad = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+
+  function esc(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function renderItem(log) {
+    const isSnack = (log.kind === "SNACK");
+    const tagClass = isSnack ? "tag snack" : "tag";
+    const fedAt = fmt(log.fedAt);
+
+    const memoHtml = (log.memo && String(log.memo).trim() !== "")
+      ? `<div class="memo">${esc(log.memo)}</div>`
+      : "";
+
+    const createdAtHtml = log.createdAt
+      ? `<div>createdAt：<span>${esc(fmt(log.createdAt))}</span></div>`
+      : "";
+
+    // ✅ あなたの仕様：updatedAt が null の場合は表示しない
+    const updatedAtHtml = log.updatedAt
+      ? `<div>updatedAt：<span>${esc(fmt(log.updatedAt))}</span></div>`
+      : "";
+
+    // 削除ボタン（任意機能）
+    const delBtn = (log.id != null)
+      ? `<button class="danger" type="button" data-id="${esc(log.id)}">削除</button>`
+      : "";
+
+    return `
+      <article class="item">
+        <div class="top">
+          <div class="left">
+            <div class="dt">${esc(fedAt)}</div>
+            <span class="${tagClass}">${esc(log.kind ?? "")}</span>
+          </div>
+          ${delBtn}
+        </div>
+
+        <div class="meta">
+          <div>誰が：<b>${esc(log.familyId ?? "")}</b></div>
+          <div>どのペット：<b>${esc(log.petId ?? "")}</b></div>
+          <div>量：<b>${esc(log.portion ?? "")}</b></div>
+        </div>
+
+        ${memoHtml}
+
+        <div class="foot">
+          ${createdAtHtml}
+          ${updatedAtHtml}
+        </div>
+      </article>
+    `;
+  }
+
+  async function loadLogs() {
+    const btn = document.getElementById("btnReload");
+    btn.disabled = true;
+
+    try {
+      const res = await fetch("/api/logs/recent", { method: "GET" });
+
+      if (!res.ok) {
+        const text = await res.text();
+        showNg("取得に失敗しました（HTTP " + res.status + "）: " + text);
+        btn.disabled = false;
+        return;
+      }
+
+      const logs = await res.json();
+
+      const listEl = document.getElementById("list");
+      const emptyEl = document.getElementById("empty");
+
+      if (!Array.isArray(logs) || logs.length === 0) {
+        listEl.style.display = "none";
+        emptyEl.style.display = "block";
+        btn.disabled = false;
+        return;
+      }
+
+      emptyEl.style.display = "none";
+      listEl.style.display = "grid";
+      listEl.innerHTML = logs.map(renderItem).join("");
+
+      // 削除ボタンのイベントを付ける
+      listEl.querySelectorAll("button[data-id]").forEach((b) => {
+        b.addEventListener("click", async () => {
+          const id = b.getAttribute("data-id");
+          if (!id) return;
+
+          const ok = confirm("このログを削除しますか？（id=" + id + "）");
+          if (!ok) return;
+
+          try {
+            const delRes = await fetch("/api/logs/" + encodeURIComponent(id), { method: "DELETE" });
+            if (!delRes.ok) {
+              const t = await delRes.text();
+              showNg("削除に失敗しました（HTTP " + delRes.status + "）: " + t);
+              return;
+            }
+            showOk("削除しました。再読み込みします…");
+            await loadLogs();
+          } catch (e) {
+            showNg("通信エラー: " + e);
+          }
+        });
+      });
+
+      btn.disabled = false;
+
+    } catch (e) {
+      showNg("通信エラー: " + e);
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById("btnReload").addEventListener("click", loadLogs);
+  loadLogs();
+</script>
 </body>
 </html>
