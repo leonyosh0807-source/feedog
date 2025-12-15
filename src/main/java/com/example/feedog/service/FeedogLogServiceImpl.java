@@ -1,21 +1,20 @@
 package com.example.feedog.service;
 
-import com.example.feedog.domain.FeedKind;
-import com.example.feedog.domain.FeedogLog;
-import com.example.feedog.domain.FeedogLogRepository;
-import com.example.feedog.domain.Portion;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.example.feedog.domain.FeedKind;
+import com.example.feedog.domain.FeedogLog;
+import com.example.feedog.domain.Portion;
+import com.example.feedog.repository.FeedogLogRepository;
 
 /**
  * FeedogLogService の実装クラス。
  * 給餌ログの登録、取得、削除といった基本操作を提供する。
  */
 @Service
-@Transactional
 public class FeedogLogServiceImpl implements FeedogLogService {
 
     private final FeedogLogRepository repository;
@@ -49,7 +48,6 @@ public class FeedogLogServiceImpl implements FeedogLogService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<FeedogLog> getRecentLogs() {
         // ドメイン側の抽象メソッドを呼ぶだけ
         return repository.findRecentLogs();

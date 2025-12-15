@@ -3,56 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Feedog Logs</title>
+  <title>ログ一覧 | Feedog</title>
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin:0; background:#f6f7fb; color:#111; }
-    header { padding:16px 18px; background:#fff; border-bottom:1px solid #e7e7ee; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif; margin: 0; background:#f6f7fb; color:#111; }
+    header { padding: 16px 18px; background:#fff; border-bottom:1px solid #e7e7ee; display:flex; align-items:center; justify-content:space-between; gap:12px; }
     header h1 { margin:0; font-size:18px; }
-    header a { color:#2f6fed; text-decoration:none; font-size:14px; }
-    header a:hover { text-decoration:underline; }
+    header .links { display:flex; gap:12px; align-items:center; }
+    a { color:#2f6fed; text-decoration:none; }
+    a:hover { text-decoration: underline; }
     main { max-width: 900px; margin: 0 auto; padding: 18px; }
-    .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom: 12px; }
-    .bar button { border:none; background:#2f6fed; color:#fff; border-radius:10px; padding: 10px 12px; cursor:pointer; }
-    .bar button:disabled { opacity:.6; cursor:default; }
-    .small { font-size:12px; color:#666; }
-    .list { display:grid; gap: 12px; }
-    .item { background:#fff; border:1px solid #e7e7ee; border-radius:12px; padding: 12px 14px; box-shadow: 0 1px 0 rgba(0,0,0,.03); }
-    .top { display:flex; gap: 10px; align-items:baseline; flex-wrap:wrap; justify-content:space-between; }
-    .left { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
-    .dt { font-weight:700; }
-    .tag { font-size:12px; padding: 3px 8px; border-radius:999px; background:#eef3ff; color:#2f6fed; }
-    .tag.snack { background:#eafaf3; color:#18a06b; }
-    .meta { margin-top: 8px; font-size:13px; color:#333; display:grid; gap:4px; }
-    .memo { margin-top: 8px; padding: 10px 12px; background:#fafbff; border:1px solid #e9ecff; border-radius:10px; font-size:13px; color:#222; white-space:pre-wrap; }
-    .foot { margin-top: 10px; font-size:12px; color:#666; display:flex; gap:12px; flex-wrap:wrap; }
-    .danger { background:#fff; border:1px solid #ffd2d2; color:#b40000; border-radius:10px; padding: 8px 10px; cursor:pointer; }
-    .cardEmpty { background:#fff; border:1px solid #e7e7ee; border-radius:12px; padding: 18px; text-align:center; color:#555; }
+    .card { background:#fff; border:1px solid #e7e7ee; border-radius:12px; padding:16px; box-shadow: 0 1px 0 rgba(0,0,0,.03); }
+    .topbar { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:12px; }
+    .small { font-size: 12px; color:#666; }
+    button { border:none; border-radius:10px; padding: 10px 12px; font-size:14px; cursor:pointer; background:#2f6fed; color:#fff; }
+    button.secondary { background:#e9ecf7; color:#2f6fed; }
     .msg { margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid transparent; display:none; }
     .msg.ok { background:#ecfff6; border-color:#bfead5; color:#0b6b41; }
     .msg.ng { background:#fff0f0; border-color:#ffd2d2; color:#b40000; }
+
+    table { width:100%; border-collapse: collapse; }
+    thead th { text-align:left; font-size:12px; color:#444; padding:10px 8px; border-bottom:1px solid #e7e7ee; }
+    tbody td { padding:12px 8px; border-bottom:1px solid #f0f0f5; vertical-align: top; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #d8d8e3; background:#fafaff; }
+    .kind-food { border-color:#b9cdfa; background:#edf3ff; color:#1e4fbf; }
+    .kind-snack { border-color:#bfead5; background:#ecfff6; color:#0b6b41; }
+    .muted { color:#666; font-size:13px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; color:#333; }
+    .actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+    .danger { background:#ff4d4f; }
+    .danger.secondary { background:#ffecec; color:#b40000; }
+
+    @media (max-width: 720px) {
+      thead { display:none; }
+      table, tbody, tr, td { display:block; width:100%; }
+      tbody tr { border:1px solid #e7e7ee; border-radius:12px; padding:10px 12px; margin-bottom:12px; background:#fff; }
+      tbody td { border:none; padding:6px 0; }
+      .actions { justify-content:flex-start; }
+    }
   </style>
 </head>
 
 <body>
 <header>
   <h1>Feedog Logs</h1>
-  <a href="/feed">＋ 食事入力へ</a>
+  <div class="links">
+    <a href="/feed">食事入力へ</a>
+    <span class="small mono">GET /api/logs/recent</span>
+  </div>
 </header>
 
 <main>
-  <div class="bar">
-    <button id="btnReload" type="button">更新</button>
-    <span class="small">API：GET /api/logs/recent</span>
-  </div>
-
   <div id="msgOk" class="msg ok"></div>
   <div id="msgNg" class="msg ng"></div>
 
-  <section id="list" class="list" style="display:none;"></section>
+  <section class="card">
+    <div class="topbar">
+      <div class="small" id="summary">読み込み中…</div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button type="button" class="secondary" id="btnReload">再読み込み</button>
+      </div>
+    </div>
 
-  <section id="empty" class="cardEmpty" style="display:none;">
-    <div>ログはまだありません。</div>
-    <div style="margin-top: 10px;"><a href="/feed">食事入力へ</a></div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 160px;">日時</th>
+          <th style="width: 90px;">種別</th>
+          <th style="width: 90px;">量</th>
+          <th>メモ</th>
+          <th style="width: 160px;">作成/更新</th>
+          <th style="width: 80px; text-align:right;">操作</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <!-- JSで挿入 -->
+      </tbody>
+    </table>
+
+    <div class="small muted" style="margin-top:12px;">
+      ※ updatedAt が null の場合は表示しません（仕様）
+    </div>
   </section>
 </main>
 
@@ -73,19 +103,7 @@
     ng.style.display = "block";
   }
 
-  function fmt(dt) {
-    // LocalDateTimeのJSONは "2025-01-15T07:32:00" のような形式想定
-    if (!dt) return "";
-    const d = new Date(dt);
-    if (isNaN(d.getTime())) {
-      // パースできない場合はそのまま返す（環境差対策）
-      return String(dt);
-    }
-    const pad = (n) => String(n).padStart(2, "0");
-    return d.getFullYear() + "/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
-  }
-
-  function esc(s) {
+  function escapeHtml(s) {
     return String(s)
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
@@ -94,118 +112,116 @@
       .replaceAll("'", "&#39;");
   }
 
-  function renderItem(log) {
-    const isSnack = (log.kind === "SNACK");
-    const tagClass = isSnack ? "tag snack" : "tag";
-    const fedAt = fmt(log.fedAt);
+  // ISOっぽい日時文字列を「YYYY/MM/DD HH:mm」くらいに整形（失敗したらそのまま）
+  function formatDateTime(text) {
+    if (!text) return "";
+    const d = new Date(text);
+    if (Number.isNaN(d.getTime())) return text;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${y}/${m}/${day} ${hh}:${mm}`;
+  }
 
-    const memoHtml = (log.memo && String(log.memo).trim() !== "")
-      ? `<div class="memo">${esc(log.memo)}</div>`
-      : "";
+  function kindPill(kind) {
+    if (kind === "FOOD") return `<span class="pill kind-food">ごはん</span>`;
+    if (kind === "SNACK") return `<span class="pill kind-snack">おやつ</span>`;
+    return `<span class="pill">${escapeHtml(kind ?? "")}</span>`;
+  }
 
-    const createdAtHtml = log.createdAt
-      ? `<div>createdAt：<span>${esc(fmt(log.createdAt))}</span></div>`
-      : "";
-
-    // ✅ あなたの仕様：updatedAt が null の場合は表示しない
-    const updatedAtHtml = log.updatedAt
-      ? `<div>updatedAt：<span>${esc(fmt(log.updatedAt))}</span></div>`
-      : "";
-
-    // 削除ボタン（任意機能）
-    const delBtn = (log.id != null)
-      ? `<button class="danger" type="button" data-id="${esc(log.id)}">削除</button>`
-      : "";
-
-    return `
-      <article class="item">
-        <div class="top">
-          <div class="left">
-            <div class="dt">${esc(fedAt)}</div>
-            <span class="${tagClass}">${esc(log.kind ?? "")}</span>
-          </div>
-          ${delBtn}
-        </div>
-
-        <div class="meta">
-          <div>誰が：<b>${esc(log.familyId ?? "")}</b></div>
-          <div>どのペット：<b>${esc(log.petId ?? "")}</b></div>
-          <div>量：<b>${esc(log.portion ?? "")}</b></div>
-        </div>
-
-        ${memoHtml}
-
-        <div class="foot">
-          ${createdAtHtml}
-          ${updatedAtHtml}
-        </div>
-      </article>
-    `;
+  function portionText(portion) {
+    if (portion === "LARGE") return "多め";
+    if (portion === "NORMAL") return "普通";
+    if (portion === "SMALL") return "少なめ";
+    return portion ?? "";
   }
 
   async function loadLogs() {
-    const btn = document.getElementById("btnReload");
-    btn.disabled = true;
+    document.getElementById("msgOk").style.display = "none";
+    document.getElementById("msgNg").style.display = "none";
+
+    const tbody = document.getElementById("tbody");
+    tbody.innerHTML = "";
 
     try {
       const res = await fetch("/api/logs/recent", { method: "GET" });
-
       if (!res.ok) {
         const text = await res.text();
-        showNg("取得に失敗しました（HTTP " + res.status + "）: " + text);
-        btn.disabled = false;
+        showNg("読み込みに失敗しました（HTTP " + res.status + "）: " + text);
+        document.getElementById("summary").textContent = "読み込み失敗";
         return;
       }
 
       const logs = await res.json();
 
-      const listEl = document.getElementById("list");
-      const emptyEl = document.getElementById("empty");
+      document.getElementById("summary").textContent =
+        "表示件数: " + logs.length + " 件（新しい順）";
 
-      if (!Array.isArray(logs) || logs.length === 0) {
-        listEl.style.display = "none";
-        emptyEl.style.display = "block";
-        btn.disabled = false;
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">まだログがありません。<a href="/feed">食事入力</a>から登録してください。</td></tr>`;
         return;
       }
 
-      emptyEl.style.display = "none";
-      listEl.style.display = "grid";
-      listEl.innerHTML = logs.map(renderItem).join("");
+      for (const log of logs) {
+        const fedAt = formatDateTime(log.fedAt);
+        const createdAt = formatDateTime(log.createdAt);
+        const updatedAt = log.updatedAt ? formatDateTime(log.updatedAt) : "";
 
-      // 削除ボタンのイベントを付ける
-      listEl.querySelectorAll("button[data-id]").forEach((b) => {
-        b.addEventListener("click", async () => {
-          const id = b.getAttribute("data-id");
+        const memo = (log.memo == null || String(log.memo).trim() === "") ? "<span class='muted'>（なし）</span>" : escapeHtml(log.memo);
+
+        // updatedAt が null の場合は表示しない（仕様）
+        const createdUpdated =
+          updatedAt
+            ? `<div class="mono">${createdAt}</div><div class="mono muted">upd: ${updatedAt}</div>`
+            : `<div class="mono">${createdAt}</div>`;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><div>${escapeHtml(fedAt)}</div><div class="small muted">id: ${escapeHtml(log.id ?? "")}</div></td>
+          <td>${kindPill(log.kind)}</td>
+          <td><span class="pill">${escapeHtml(portionText(log.portion))}</span></td>
+          <td>${memo}</td>
+          <td>${createdUpdated}</td>
+          <td>
+            <div class="actions">
+              <button type="button" class="danger secondary" data-id="${escapeHtml(log.id ?? "")}">削除</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+
+      // 削除ボタンにイベントを付与（DELETE /api/logs/{id}）
+      for (const btn of tbody.querySelectorAll("button[data-id]")) {
+        btn.addEventListener("click", async (e) => {
+          const id = e.currentTarget.getAttribute("data-id");
           if (!id) return;
 
-          const ok = confirm("このログを削除しますか？（id=" + id + "）");
-          if (!ok) return;
+          if (!confirm("ログを削除しますか？（id: " + id + "）")) return;
 
-          try {
-            const delRes = await fetch("/api/logs/" + encodeURIComponent(id), { method: "DELETE" });
-            if (!delRes.ok) {
-              const t = await delRes.text();
-              showNg("削除に失敗しました（HTTP " + delRes.status + "）: " + t);
-              return;
-            }
-            showOk("削除しました。再読み込みします…");
-            await loadLogs();
-          } catch (e) {
-            showNg("通信エラー: " + e);
+          const delRes = await fetch("/api/logs/" + encodeURIComponent(id), { method: "DELETE" });
+          if (!delRes.ok) {
+            const text = await delRes.text();
+            showNg("削除に失敗しました（HTTP " + delRes.status + "）: " + text);
+            return;
           }
-        });
-      });
 
-      btn.disabled = false;
+          showOk("削除しました。再読み込みします…");
+          await loadLogs();
+        });
+      }
 
     } catch (e) {
       showNg("通信エラー: " + e);
-      btn.disabled = false;
+      document.getElementById("summary").textContent = "通信エラー";
     }
   }
 
   document.getElementById("btnReload").addEventListener("click", loadLogs);
+
+  // 初回読み込み
   loadLogs();
 </script>
 </body>

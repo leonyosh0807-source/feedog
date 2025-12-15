@@ -54,12 +54,12 @@
       <div>
         <label for="portion">量（portion）</label>
         <select id="portion">
-          <!-- Portion enum 名を送る：MORE / NORMAL / LESS -->
-          <option value="MORE">多め</option>
+          <!-- Portion enum 名を送る：LARGE / NORMAL / SMALL -->
+          <option value="LARGE">多め</option>
           <option value="NORMAL" selected>普通</option>
-          <option value="LESS">少なめ</option>
+          <option value="SMALL">少なめ</option>
         </select>
-        <div class="hint">portion は Portion enum（MORE/NORMAL/LESS）として送信します</div>
+        <div class="hint">portion は Portion enum（LARGE/NORMAL/SMALL）として送信します</div>
       </div>
 
       <div>
@@ -69,8 +69,8 @@
       </div>
 
       <div class="btns">
-        <!-- kind は FeedKind enum 名（MEAL / SNACK）を送る -->
-        <button class="meal" id="btnMeal" type="button">ごはん</button>
+        <!-- kind は FeedKind enum 名（FOOD / SNACK）を送る -->
+        <button class="meal" id="btnFood" type="button">ごはん</button>
         <button class="snack" id="btnSnack" type="button">おやつ</button>
       </div>
 
@@ -110,7 +110,7 @@
   async function postLog(kind) {
     const familyId = getNumberValue("familyId");
     const petId = getNumberValue("petId");
-    const portion = document.getElementById("portion").value;
+    const portion = document.getElementById("portion").value; // LARGE / NORMAL / SMALL
     const memoRaw = document.getElementById("memo").value;
     const memo = memoRaw.trim() === "" ? null : memoRaw;
 
@@ -120,12 +120,12 @@
       return;
     }
 
-    // FeedogLogRequest と完全一致の JSON を作る
+    // FeedogLogRequest と一致する JSON を作る
     const body = {
       familyId: familyId,
       petId: petId,
-      kind: kind,       // "MEAL" or "SNACK"
-      portion: portion, // "MORE" or "NORMAL" or "LESS"
+      kind: kind,       // "FOOD" or "SNACK"
+      portion: portion, // "LARGE" or "NORMAL" or "SMALL"
       memo: memo
     };
 
@@ -143,11 +143,10 @@
       }
 
       // FeedogLogResponse（JSON）
-      const saved = await res.json();
+      await res.json();
 
       showOk("登録しました。ログ一覧へ移動します…");
 
-      // すぐ一覧へ（少し待ってから）
       setTimeout(() => {
         window.location.href = "/logs";
       }, 300);
@@ -157,7 +156,7 @@
     }
   }
 
-  document.getElementById("btnMeal").addEventListener("click", () => postLog("MEAL"));
+  document.getElementById("btnFood").addEventListener("click", () => postLog("FOOD"));
   document.getElementById("btnSnack").addEventListener("click", () => postLog("SNACK"));
 </script>
 </body>

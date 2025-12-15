@@ -1,8 +1,10 @@
-package com.example.feedog.domain;
+package com.example.feedog.repository;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import com.example.feedog.domain.FeedogLog;
 
 /**
  * FeedogLog を永続化層（DBなど）から取得・保存するためのリポジトリ。
@@ -31,6 +33,9 @@ public interface FeedogLogRepository {
 
     /** 特定のペットに対するログだけを取得。 */
     List<FeedogLog> findByPetId(Long petId);
+    
+    // ★ ServiceImpl が呼んでいるメソッド
+    List<FeedogLog> findRecentLogs();
 
     /** 主キーで 1 件削除。 */
     void deleteById(Long id);
