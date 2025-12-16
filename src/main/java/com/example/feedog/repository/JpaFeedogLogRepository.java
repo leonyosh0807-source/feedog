@@ -1,11 +1,11 @@
-package com.example.feedog.infrastructure;
+package com.example.feedog.repository;
 
-import com.example.feedog.domain.FeedogLog;
-import com.example.feedog.domain.FeedogLogRepository;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.example.feedog.domain.FeedogLog;
 
 /**
  * FeedogLog をデータベースに保存するための JPA ベースのリポジトリ。
@@ -17,19 +17,14 @@ import java.util.List;
 public interface JpaFeedogLogRepository
         extends FeedogLogRepository, JpaRepository<FeedogLog, Long> {
 
-    /**
-     * 給餌ログを「新しい fedAt の順」に最大 50 件まで取得する。
-     *
-     * メソッド名からクエリを自動生成する Spring Data JPA の機能を利用。
-     */
+    /** 給餌ログを「新しい fedAt の順」に最大 50 件まで取得する。 */
     List<FeedogLog> findTop50ByOrderByFedAtDesc();
 
-    /**
-     * ドメイン側の「最近のログ」取得メソッドを
-     * JPA の命名規則メソッドに橋渡しする。
-     */
+    /** ドメイン側の findRecentLogs() を Spring Data JPA のメソッドへ橋渡し。 */
     @Override
     default List<FeedogLog> findRecentLogs() {
         return findTop50ByOrderByFedAtDesc();
     }
 }
+
+
