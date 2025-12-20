@@ -8,11 +8,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.springframework.stereotype.Repository;
-
 import com.example.feedog.domain.FeedogLog;
 
-@Repository
 public class InMemoryFeedogLogRepository implements FeedogLogRepository {
 
     private final ConcurrentHashMap<Long, FeedogLog> store = new ConcurrentHashMap<>();
