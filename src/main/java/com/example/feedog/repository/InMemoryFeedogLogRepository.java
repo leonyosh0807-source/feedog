@@ -35,7 +35,7 @@ public class InMemoryFeedogLogRepository implements FeedogLogRepository {
      */
     @Override
     public List<FeedogLog> findRecentLogs() {
-        List<FeedogLog> list = findAllOrderByFedAtDesc();
+        List<FeedogLog> list = findAllOrderByFedAtDesc(); // ヘルパー呼び出し
         if (list.size() > 50) {
             return list.subList(0, 50);
         }
@@ -44,11 +44,14 @@ public class InMemoryFeedogLogRepository implements FeedogLogRepository {
 
     /**
      * 給餌日時の降順（新しい順）で全件取得。
+     * ※ FeedogLogRepository には存在しないため override しない（ヘルパー扱い）
      */
-    @Override
-    public List<FeedogLog> findAllOrderByFedAtDesc() {
+    private List<FeedogLog> findAllOrderByFedAtDesc() {
         List<FeedogLog> list = new ArrayList<>(store.values());
-        list.sort(Comparator.comparing(FeedogLog::getFedAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        list.sort(Comparator.comparing(
+                FeedogLog::getFedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        ));
         return list;
     }
 
@@ -102,5 +105,6 @@ public class InMemoryFeedogLogRepository implements FeedogLogRepository {
         store.remove(id);
     }
 }
+
 
 
