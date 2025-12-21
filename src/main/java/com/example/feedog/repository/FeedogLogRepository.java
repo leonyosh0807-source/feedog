@@ -22,8 +22,11 @@ public interface FeedogLogRepository {
     /** 主キーで 1 件取得する。見つからなければ空。 */
     Optional<FeedogLog> findById(Long id);
 
-    /** 給餌日時の降順（新しい順）で全件取得。 */
-    List<FeedogLog> findAllOrderByFedAtDesc();
+    /**
+     * 最近の給餌ログを取得する（新しい順）。
+     * 件数制限などの詳細は実装側に委ねる。
+     */
+    List<FeedogLog> findRecentLogs();
 
     /** 指定した日付のログを取得（その日中 0:00〜23:59）。 */
     List<FeedogLog> findByFedDate(LocalDate date);
@@ -33,10 +36,8 @@ public interface FeedogLogRepository {
 
     /** 特定のペットに対するログだけを取得。 */
     List<FeedogLog> findByPetId(Long petId);
-    
-    // ★ ServiceImpl が呼んでいるメソッド
-    List<FeedogLog> findRecentLogs();
 
     /** 主キーで 1 件削除。 */
     void deleteById(Long id);
 }
+
