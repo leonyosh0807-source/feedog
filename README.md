@@ -21,3 +21,9 @@
 ```bash
 docker build -t feedog .
 docker run -p 8080:8080 feedog
+
+### 構成概要
+- フロントエンド: Thymeleaf
+- バックエンド: Spring Boot (Java 17)
+- DB: PostgreSQL
+- デプロイ: Render（将来 AWS へ移行予定）
