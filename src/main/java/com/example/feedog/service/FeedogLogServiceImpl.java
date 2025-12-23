@@ -1,6 +1,7 @@
 package com.example.feedog.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class FeedogLogServiceImpl implements FeedogLogService {
                           Portion portion,
                           String memo) {
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Tokyo"));
 
         FeedogLog log = new FeedogLog(
                 null,           // id（保存時に自動採番）
